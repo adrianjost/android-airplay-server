@@ -30,6 +30,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.jqssun.airplay.Prefs
 import io.github.jqssun.airplay.R
 import io.github.jqssun.airplay.appSettingsIntent
+import io.github.jqssun.airplay.canTurnScreenOn
+import io.github.jqssun.airplay.openTurnScreenOnSettings
 import io.github.jqssun.airplay.viewmodel.MainViewModel
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -205,11 +207,19 @@ fun SettingsScreen(viewModel: MainViewModel) {
             onValueChange = { viewModel.set(Prefs.PICTURE_IN_PICTURE, it) }
         )
 
+        val wakeCtx = LocalContext.current
+        val canTurnScreenOn = rememberCanTurnScreenOn()
         SettingSwitch(
             title = stringResource(R.string.setting_wake_on_connect),
-            description = stringResource(R.string.setting_wake_on_connect_desc),
-            checked = wakeOnConnect,
-            onCheckedChange = { viewModel.set(Prefs.WAKE_ON_CONNECT, it) }
+            description = stringResource(
+                if (wakeOnConnect && !canTurnScreenOn) R.string.setting_wake_on_connect_no_permission
+                else R.string.setting_wake_on_connect_desc
+            ),
+            checked = wakeOnConnect && canTurnScreenOn,
+            onCheckedChange = {
+                viewModel.set(Prefs.WAKE_ON_CONNECT, it)
+                if (it && !wakeCtx.canTurnScreenOn()) wakeCtx.openTurnScreenOnSettings()
+            }
         )
 
         SettingResolution(
