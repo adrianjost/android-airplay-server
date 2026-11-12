@@ -108,6 +108,8 @@
     <string name="setting_picture_in_picture_desc">Shrink into a floating window when leaving the app during a session, Auto turns it off on TV devices</string>
     <string name="setting_keep_screen_on">Keep screen on</string>
     <string name="setting_keep_screen_on_desc">Prevent sleeping while a sender is connected</string>
+    <string name="setting_wake_on_connect">Wake screen on connect</string>
+    <string name="setting_wake_on_connect_desc">Turn the screen on when a sender connects, on Android TV this also turns on the TV over HDMI-CEC</string>
     <string name="setting_advertise_video">Advertise AirPlay video support</string>
     <string name="setting_advertise_video_desc">When off, videos are cast as audio only streams</string>
     <string name="setting_advertise_mirroring">Advertise AirPlay mirroring support</string>
@@ -121,6 +123,8 @@
     <string name="setting_launch_on_connect">Open this application on connect</string>
     <string name="setting_launch_on_connect_desc">Show the screen when a sender connects</string>
     <string name="setting_launch_on_connect_no_permission">Tap to grant Display over other apps permission</string>
+    <string name="setting_close_on_disconnect">Close this application on disconnect</string>
+    <string name="setting_close_on_disconnect_desc">Leave the screen when the last sender disconnects, requires Run in background</string>
     <string name="setting_discovery">Discoverable over</string>
     <string name="setting_discovery_all_desc">Advertise on all usable interfaces. Uses NsdManager.</string>
     <string name="setting_discovery_usb_desc">Only advertise over USB tethering to enforce wired connection. Uses custom mDNS responder.</string>

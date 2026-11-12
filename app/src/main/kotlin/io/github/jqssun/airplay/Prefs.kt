@@ -111,9 +111,11 @@ object Prefs {
     // auto: off on tv devices, where sessions should always fill the screen
     val PICTURE_IN_PICTURE = tri("picture_in_picture")
     val KEEP_SCREEN_ON = bool("keep_screen_on", true)
+    val WAKE_ON_CONNECT = bool("wake_on_connect", true)
     val ADVERTISE_VIDEO = bool("advertise_video", true, restart = true)
     val ADVERTISE_MIRRORING = bool("advertise_mirroring", true, restart = true)
     val ADVERTISE_AUDIO = bool("advertise_audio", true, restart = true)
     val LAUNCH_ON_CONNECT = bool("launch_on_connect", true)
+    val CLOSE_ON_DISCONNECT = bool("close_on_disconnect", true)
     val USB_ONLY = bool("usb_only", false, restart = true)
 }

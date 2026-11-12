@@ -47,10 +47,12 @@ fun SettingsScreen(viewModel: MainViewModel) {
     val autoFullscreen by viewModel.pref(Prefs.AUTO_FULLSCREEN).collectAsState()
     val pictureInPicture by viewModel.pref(Prefs.PICTURE_IN_PICTURE).collectAsState()
     val keepScreenOn by viewModel.pref(Prefs.KEEP_SCREEN_ON).collectAsState()
+    val wakeOnConnect by viewModel.pref(Prefs.WAKE_ON_CONNECT).collectAsState()
     val advertiseVideo by viewModel.pref(Prefs.ADVERTISE_VIDEO).collectAsState()
     val advertiseMirroring by viewModel.pref(Prefs.ADVERTISE_MIRRORING).collectAsState()
     val advertiseAudio by viewModel.pref(Prefs.ADVERTISE_AUDIO).collectAsState()
     val launchOnConnect by viewModel.pref(Prefs.LAUNCH_ON_CONNECT).collectAsState()
+    val closeOnDisconnect by viewModel.pref(Prefs.CLOSE_ON_DISCONNECT).collectAsState()
     val maxFps by viewModel.pref(Prefs.MAX_FPS).collectAsState()
     val overscanned by viewModel.pref(Prefs.OVERSCANNED).collectAsState()
     val requirePin by viewModel.pref(Prefs.REQUIRE_PIN).collectAsState()
@@ -179,6 +181,13 @@ fun SettingsScreen(viewModel: MainViewModel) {
             }
         )
 
+        SettingSwitch(
+            title = stringResource(R.string.setting_close_on_disconnect),
+            description = stringResource(R.string.setting_close_on_disconnect_desc),
+            checked = closeOnDisconnect && runInBackground,
+            onCheckedChange = { viewModel.set(Prefs.CLOSE_ON_DISCONNECT, it) }
+        )
+
         SectionHeader(stringResource(R.string.section_display))
 
         SettingSwitch(
@@ -194,6 +203,13 @@ fun SettingsScreen(viewModel: MainViewModel) {
             value = pictureInPicture,
             options = tri,
             onValueChange = { viewModel.set(Prefs.PICTURE_IN_PICTURE, it) }
+        )
+
+        SettingSwitch(
+            title = stringResource(R.string.setting_wake_on_connect),
+            description = stringResource(R.string.setting_wake_on_connect_desc),
+            checked = wakeOnConnect,
+            onCheckedChange = { viewModel.set(Prefs.WAKE_ON_CONNECT, it) }
         )
 
         SettingResolution(
