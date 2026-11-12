@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.jqssun.airplay.Prefs
 import io.github.jqssun.airplay.R
 import io.github.jqssun.airplay.appSettingsIntent
+import io.github.jqssun.airplay.effectiveServerName
 import io.github.jqssun.airplay.viewmodel.MainViewModel
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -95,7 +96,10 @@ fun SettingsScreen(viewModel: MainViewModel) {
         SettingTextField(
             label = stringResource(R.string.setting_server_name),
             value = serverName,
-            onCommit = { viewModel.set(Prefs.SERVER_NAME, it) }
+            onCommit = { viewModel.set(Prefs.SERVER_NAME, it.trim()) },
+            description = stringResource(
+                R.string.setting_server_name_desc, LocalContext.current.effectiveServerName("")
+            )
         )
 
         SettingTextField(
