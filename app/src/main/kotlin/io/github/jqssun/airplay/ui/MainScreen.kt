@@ -88,6 +88,12 @@ private enum class Tab(val labelRes: Int, val icon: ImageVector) {
 }
 
 @Composable
+private fun pipEnabled(viewModel: MainViewModel): Boolean {
+    val pip by viewModel.pref(Prefs.PICTURE_IN_PICTURE).collectAsState()
+    return Prefs.forced(pip) ?: !isTv()
+}
+
+@Composable
 fun MainScreen(
     viewModel: MainViewModel,
     isInPip: Boolean = false,
@@ -227,9 +233,11 @@ fun MainScreen(
         val videoTitle by viewModel.videoTitle.collectAsState()
         val videoLocation by viewModel.videoLocation.collectAsState()
         val speed by viewModel.videoSpeed.collectAsState()
-        val isPipSupported = remember {
+        val pipAllowed = pipEnabled(viewModel)
+        val hasPipFeature = remember {
             context.packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
         }
+        val isPipSupported = pipAllowed && hasPipFeature
         var showSpeedSelector by remember { mutableStateOf(false) }
         BackHandler { viewModel.stopVideoPlayback() }
 
@@ -664,11 +672,13 @@ private fun OverviewContent(
                 }
                 if (state == ServerState.RUNNING && mirroringActive) {
                     Row(modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)) {
-                        IconButton(onClick = onPip, modifier = Modifier.dpadFocus()) {
-                            Icon(
-                                painterResource(R.drawable.ic_pip), contentDescription = stringResource(R.string.cd_pip),
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                            )
+                        if (pipEnabled(viewModel)) {
+                            IconButton(onClick = onPip, modifier = Modifier.dpadFocus()) {
+                                Icon(
+                                    painterResource(R.drawable.ic_pip), contentDescription = stringResource(R.string.cd_pip),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                )
+                            }
                         }
                         IconButton(onClick = onFullscreen, modifier = Modifier.dpadFocus()) {
                             Icon(
@@ -802,11 +812,13 @@ private fun FullscreenVideo(
             modifier = Modifier.align(Alignment.TopEnd)
         ) {
             Row(modifier = Modifier.padding(8.dp)) {
-                IconButton(onClick = onPip, modifier = Modifier.dpadFocus()) {
-                    Icon(
-                        painterResource(R.drawable.ic_pip), contentDescription = stringResource(R.string.cd_pip),
-                        tint = Color.White.copy(alpha = 0.7f)
-                    )
+                if (pipEnabled(viewModel)) {
+                    IconButton(onClick = onPip, modifier = Modifier.dpadFocus()) {
+                        Icon(
+                            painterResource(R.drawable.ic_pip), contentDescription = stringResource(R.string.cd_pip),
+                            tint = Color.White.copy(alpha = 0.7f)
+                        )
+                    }
                 }
                 IconButton(onClick = onExitFullscreen, modifier = Modifier.dpadFocus()) {
                     Icon(

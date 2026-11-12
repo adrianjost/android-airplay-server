@@ -45,6 +45,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
     val resolution by viewModel.pref(Prefs.RESOLUTION).collectAsState()
     val idlePreview by viewModel.pref(Prefs.IDLE_PREVIEW).collectAsState()
     val autoFullscreen by viewModel.pref(Prefs.AUTO_FULLSCREEN).collectAsState()
+    val pictureInPicture by viewModel.pref(Prefs.PICTURE_IN_PICTURE).collectAsState()
     val keepScreenOn by viewModel.pref(Prefs.KEEP_SCREEN_ON).collectAsState()
     val wakeOnConnect by viewModel.pref(Prefs.WAKE_ON_CONNECT).collectAsState()
     val advertiseVideo by viewModel.pref(Prefs.ADVERTISE_VIDEO).collectAsState()
@@ -194,6 +195,14 @@ fun SettingsScreen(viewModel: MainViewModel) {
             description = stringResource(R.string.setting_auto_fullscreen_desc),
             checked = autoFullscreen,
             onCheckedChange = { viewModel.set(Prefs.AUTO_FULLSCREEN, it) }
+        )
+
+        SettingChips(
+            title = stringResource(R.string.setting_picture_in_picture),
+            description = stringResource(R.string.setting_picture_in_picture_desc),
+            value = pictureInPicture,
+            options = tri,
+            onValueChange = { viewModel.set(Prefs.PICTURE_IN_PICTURE, it) }
         )
 
         SettingSwitch(

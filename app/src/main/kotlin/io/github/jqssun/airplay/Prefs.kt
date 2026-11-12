@@ -108,6 +108,8 @@ object Prefs {
     val BENCHMARK_LOG = bool("benchmark_log", false, restart = true)
     val IDLE_PREVIEW = bool("idle_preview", false)
     val AUTO_FULLSCREEN = bool("auto_fullscreen", true)
+    // auto: off on tv devices, where sessions should always fill the screen
+    val PICTURE_IN_PICTURE = tri("picture_in_picture")
     val KEEP_SCREEN_ON = bool("keep_screen_on", true)
     val WAKE_ON_CONNECT = bool("wake_on_connect", true)
     val ADVERTISE_VIDEO = bool("advertise_video", true, restart = true)

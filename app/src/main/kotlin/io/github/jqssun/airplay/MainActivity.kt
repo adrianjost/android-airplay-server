@@ -24,6 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import io.github.jqssun.airplay.service.AirPlayService
 import io.github.jqssun.airplay.ui.MainScreen
+import io.github.jqssun.airplay.ui.isTvDevice
 import io.github.jqssun.airplay.ui.theme.AirPlayTheme
 import io.github.jqssun.airplay.viewmodel.LocalNetworkAccess
 import io.github.jqssun.airplay.viewmodel.MainViewModel
@@ -124,7 +125,9 @@ class MainActivity : ComponentActivity() {
                         viewModel.serverState, viewModel.connectionCount,
                         viewModel.videoPlaybackActive, viewModel.videoPlaybackAspect,
                         viewModel.videoAspect
-                    ) { _, _, _, _, _ -> }.collect { setPictureInPictureParams(_pipParams()) }
+                    ) { _, _, _, _, _ -> }
+                        .combine(viewModel.pref(Prefs.PICTURE_IN_PICTURE)) { _, _ -> }
+                        .collect { setPictureInPictureParams(_pipParams()) }
                 }
             }
         }
@@ -195,8 +198,11 @@ class MainActivity : ComponentActivity() {
         _refreshForeground()
     }
 
+    private fun _pipEnabled(): Boolean =
+        Prefs.forced(viewModel.pref(Prefs.PICTURE_IN_PICTURE).value) ?: !isTvDevice()
+
     fun enterPip() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || !_pipEnabled()) return
         enterPictureInPictureMode(_pipParams())
     }
 
@@ -212,7 +218,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun _shouldAutoPip(): Boolean =
-        viewModel.serverState.value == AirPlayService.ServerState.RUNNING &&
+        _pipEnabled() && viewModel.serverState.value == AirPlayService.ServerState.RUNNING &&
             viewModel.connectionCount.value > 0
 
     override fun onUserLeaveHint() {
