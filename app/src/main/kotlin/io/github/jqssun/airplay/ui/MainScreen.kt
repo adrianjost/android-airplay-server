@@ -50,6 +50,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import io.github.jqssun.airplay.Prefs
 import io.github.jqssun.airplay.R
+import io.github.jqssun.airplay.effectiveServerName
 import io.github.jqssun.airplay.openTurnScreenOnSettings
 import io.github.jqssun.airplay.service.AirPlayService.ServerState
 import io.github.jqssun.airplay.ui.gestures.BrightnessState
@@ -792,7 +793,7 @@ private fun OverviewContent(
                 ) {
                     Column {
                         Text(
-                            text = serverName,
+                            text = LocalContext.current.effectiveServerName(serverName),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
