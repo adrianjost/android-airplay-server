@@ -797,6 +797,7 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         val firstConnection = _connectionCount.value == 0
         _connectionCount.value++
         log("Sender connected (${_connectionCount.value})")
+        if (firstConnection && prefs[Prefs.WAKE_ON_CONNECT]) _wakeScreen()
         if (firstConnection && shouldLaunchOnConnect()) launchMainActivity()
     }
 
@@ -1142,6 +1143,21 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         return builder.build()
     }
 
+    // waking an android tv device also makes it send hdmi-cec one touch play,
+    // which turns on the connected tv and switches it to this input
+    private fun _wakeScreen() {
+        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        try {
+            @Suppress("DEPRECATION")
+            pm.newWakeLock(
+                PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+                "airplay:wake"
+            ).acquire(WAKE_SCREEN_TIMEOUT_MS)
+        } catch (e: Exception) {
+            Log.w(TAG, "Failed to wake screen", e)
+        }
+    }
+
     private fun launchMainActivity() {
         Handler(Looper.getMainLooper()).post {
             val launchIntent = Intent(this, MainActivity::class.java)
@@ -1183,6 +1199,8 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         private const val CLIENT_VOL_TIMEOUT_MS = 800L
         private const val CHANNEL_ID = "airplay_service"
         private const val NOTIFICATION_ID = 1
+        // long enough for the activity to take over with keep screen on
+        private const val WAKE_SCREEN_TIMEOUT_MS = 10_000L
         const val ACTION_PLAY_PAUSE = "io.github.jqssun.airplay.PLAY_PAUSE"
         const val ACTION_NEXT = "io.github.jqssun.airplay.NEXT"
         const val ACTION_PREV = "io.github.jqssun.airplay.PREV"
