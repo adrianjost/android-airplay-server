@@ -29,6 +29,7 @@ import io.github.jqssun.airplay.viewmodel.LocalNetworkAccess
 import io.github.jqssun.airplay.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
@@ -91,6 +92,26 @@ class MainActivity : ComponentActivity() {
                 }.collect { on ->
                     if (on) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                     else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
+            }
+        }
+
+        // leave once the last sender is gone so the previous app or launcher shows again
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                // drop a count that went stale while stopped
+                viewModel.updateFromService()
+                var connected = false
+                viewModel.connectionCount.collectLatest { conns ->
+                    if (conns > 0) {
+                        connected = true
+                        return@collectLatest
+                    }
+                    if (!connected) return@collectLatest
+                    connected = false
+                    // senders may briefly drop to zero when reconnecting
+                    delay(CLOSE_ON_DISCONNECT_DELAY_MS)
+                    if (_shouldCloseOnDisconnect()) finish()
                 }
             }
         }
@@ -161,6 +182,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // closing without run in background would stop the server with it
+    private fun _shouldCloseOnDisconnect(): Boolean =
+        viewModel.pref(Prefs.CLOSE_ON_DISCONNECT).value &&
+            viewModel.pref(Prefs.RUN_IN_BACKGROUND).value &&
+            viewModel.serverState.value == AirPlayService.ServerState.RUNNING &&
+            viewModel.connectionCount.value == 0
+
     override fun onStart() {
         super.onStart()
         _syncLocalNetwork()
@@ -214,5 +242,9 @@ class MainActivity : ComponentActivity() {
         }
         unbindService(connection)
         super.onDestroy()
+    }
+
+    private companion object {
+        const val CLOSE_ON_DISCONNECT_DELAY_MS = 1_500L
     }
 }
