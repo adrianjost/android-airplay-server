@@ -51,7 +51,9 @@ import androidx.core.view.WindowInsetsControllerCompat
 import io.github.jqssun.airplay.Prefs
 import io.github.jqssun.airplay.R
 import io.github.jqssun.airplay.effectiveServerName
+import io.github.jqssun.airplay.openAccessibilitySettings
 import io.github.jqssun.airplay.openTurnScreenOnSettings
+import io.github.jqssun.airplay.sleepSupported
 import io.github.jqssun.airplay.service.AirPlayService.ServerState
 import io.github.jqssun.airplay.ui.gestures.BrightnessState
 import io.github.jqssun.airplay.ui.gestures.DoubleTapIndicator
@@ -97,8 +99,13 @@ private fun wakeAccessMissing(viewModel: MainViewModel): Boolean {
 }
 
 @Composable
-private fun WakeAccessWarning() {
-    val ctx = LocalContext.current
+private fun sleepAccessMissing(viewModel: MainViewModel): Boolean {
+    val sleepOnDisconnect by viewModel.pref(Prefs.SLEEP_ON_DISCONNECT).collectAsState()
+    return sleepSupported && sleepOnDisconnect && !rememberCanSleepDevice()
+}
+
+@Composable
+private fun AccessWarning(label: String, description: String, onOpenSettings: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -110,18 +117,18 @@ private fun WakeAccessWarning() {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = stringResource(R.string.wake_access_label),
+                text = label,
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onErrorContainer
             )
             Text(
-                text = stringResource(R.string.wake_access_desc),
+                text = description,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onErrorContainer
             )
         }
         Spacer(Modifier.width(12.dp))
-        FilledTonalButton(onClick = { ctx.openTurnScreenOnSettings() }, modifier = Modifier.dpadFocus()) {
+        FilledTonalButton(onClick = onOpenSettings, modifier = Modifier.dpadFocus()) {
             Text(stringResource(R.string.btn_open_settings))
         }
     }
@@ -687,7 +694,21 @@ private fun OverviewContent(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        if (wakeAccessMissing(viewModel) && connections == 0) WakeAccessWarning()
+        val warningCtx = LocalContext.current
+        if (wakeAccessMissing(viewModel) && connections == 0) {
+            AccessWarning(
+                label = stringResource(R.string.wake_access_label),
+                description = stringResource(R.string.wake_access_desc),
+                onOpenSettings = { warningCtx.openTurnScreenOnSettings() }
+            )
+        }
+        if (sleepAccessMissing(viewModel) && connections == 0) {
+            AccessWarning(
+                label = stringResource(R.string.sleep_access_label),
+                description = stringResource(R.string.sleep_access_desc),
+                onOpenSettings = { warningCtx.openAccessibilitySettings() }
+            )
+        }
         // content area
         Box(
             modifier = Modifier

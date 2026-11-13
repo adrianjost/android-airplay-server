@@ -2,6 +2,7 @@ package io.github.jqssun.airplay
 
 import android.Manifest
 import android.app.AppOpsManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -10,6 +11,7 @@ import android.os.Build
 import android.os.Process
 import android.provider.Settings
 import androidx.core.content.ContextCompat
+import io.github.jqssun.airplay.service.SleepService
 
 fun Context.hasLocalNetwork() = Build.VERSION.SDK_INT < Build.VERSION_CODES.CINNAMON_BUN ||
     ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_LOCAL_NETWORK) == PackageManager.PERMISSION_GRANTED
@@ -39,6 +41,30 @@ fun Context.openTurnScreenOnSettings() {
     val pkg = Uri.fromParts("package", packageName, null)
     val intents = listOf(Intent(ACTION_TURN_SCREEN_ON_SETTINGS, pkg), Intent(ACTION_TURN_SCREEN_ON_SETTINGS), appSettingsIntent())
     for (intent in intents) {
+        try {
+            startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            return
+        } catch (_: Exception) {
+        }
+    }
+}
+
+// the device can only be put back to sleep through the accessibility service
+val sleepSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+
+fun Context.canSleepDevice(): Boolean {
+    if (!sleepSupported) return false
+    val enabled = try {
+        Settings.Secure.getString(contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+    } catch (_: Exception) {
+        null
+    } ?: return false
+    val service = ComponentName(this, SleepService::class.java)
+    return enabled.split(':').any { ComponentName.unflattenFromString(it) == service }
+}
+
+fun Context.openAccessibilitySettings() {
+    for (intent in listOf(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS), appSettingsIntent())) {
         try {
             startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             return
