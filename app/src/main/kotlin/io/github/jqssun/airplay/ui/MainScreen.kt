@@ -50,6 +50,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import io.github.jqssun.airplay.Prefs
 import io.github.jqssun.airplay.R
+import io.github.jqssun.airplay.openTurnScreenOnSettings
 import io.github.jqssun.airplay.service.AirPlayService.ServerState
 import io.github.jqssun.airplay.ui.gestures.BrightnessState
 import io.github.jqssun.airplay.ui.gestures.DoubleTapIndicator
@@ -85,6 +86,44 @@ private enum class Tab(val labelRes: Int, val icon: ImageVector) {
     OVERVIEW(R.string.tab_overview, Icons.Default.Cast),
     LOGS(R.string.tab_logs, Icons.AutoMirrored.Filled.Article),
     SETTINGS(R.string.tab_settings, Icons.Default.Settings)
+}
+
+// only tv devices are nagged: there the access is what turns the tv on
+@Composable
+private fun wakeAccessMissing(viewModel: MainViewModel): Boolean {
+    val wakeOnConnect by viewModel.pref(Prefs.WAKE_ON_CONNECT).collectAsState()
+    return isTv() && wakeOnConnect && !rememberCanTurnScreenOn()
+}
+
+@Composable
+private fun WakeAccessWarning() {
+    val ctx = LocalContext.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 16.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .background(MaterialTheme.colorScheme.errorContainer)
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.wake_access_label),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
+            Text(
+                text = stringResource(R.string.wake_access_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onErrorContainer
+            )
+        }
+        Spacer(Modifier.width(12.dp))
+        FilledTonalButton(onClick = { ctx.openTurnScreenOnSettings() }, modifier = Modifier.dpadFocus()) {
+            Text(stringResource(R.string.btn_open_settings))
+        }
+    }
 }
 
 @Composable
@@ -548,6 +587,29 @@ fun MainScreen(
         }
     }
 
+    // explain the turn screen on access once, the overview keeps warning afterwards
+    val wakeAccessMissing = wakeAccessMissing(viewModel)
+    val wakeAccessPrompted by viewModel.pref(Prefs.WAKE_ACCESS_PROMPTED).collectAsState()
+    if (wakeAccessMissing && !wakeAccessPrompted && pin == null && connections == 0) {
+        val ctx = LocalContext.current
+        AlertDialog(
+            onDismissRequest = { viewModel.set(Prefs.WAKE_ACCESS_PROMPTED, true) },
+            title = { Text(stringResource(R.string.wake_access_label)) },
+            text = { Text(stringResource(R.string.wake_access_dialog)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.set(Prefs.WAKE_ACCESS_PROMPTED, true)
+                    ctx.openTurnScreenOnSettings()
+                }) { Text(stringResource(R.string.btn_open_settings)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.set(Prefs.WAKE_ACCESS_PROMPTED, true) }) {
+                    Text(stringResource(R.string.btn_not_now))
+                }
+            }
+        )
+    }
+
     // pin dialog
     if (pin != null) {
         AlertDialog(
@@ -616,6 +678,7 @@ private fun OverviewContent(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
+        if (wakeAccessMissing(viewModel) && connections == 0) WakeAccessWarning()
         // content area
         Box(
             modifier = Modifier
