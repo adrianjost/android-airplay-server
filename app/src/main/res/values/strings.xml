@@ -30,6 +30,10 @@
     <string name="btn_not_now">Not now</string>
     <string name="wake_access_label">Turn screen on access needed</string>
     <string name="wake_access_desc">Allow this application to turn the screen on so a sender can wake this device and the TV</string>
+    <string name="sleep_access_label">Accessibility service needed</string>
+    <string name="sleep_access_desc">Enable the accessibility service of this application so it can put this device back to sleep after a session</string>
+    <string name="sleep_access_dialog">Android only lets an accessibility service put a device to sleep. Enable this application under Accessibility in the system settings. The service is only used to sleep the device, it does not read the screen or any input.</string>
+    <string name="sleep_service_description">Puts this device back to sleep when an AirPlay session ends that woke it. It does not read the screen or any input.</string>
     <string name="wake_access_dialog">To wake this device and turn on the TV when a sender connects, allow this application under Special app access, Turn screen on.</string>
     <string name="local_network_label">Nearby devices access needed</string>
     <string name="local_network_desc">Allow access to nearby devices so AirPlay devices can find and connect to this device</string>
@@ -111,6 +115,9 @@
     <string name="setting_keep_screen_on">Keep screen on</string>
     <string name="setting_keep_screen_on_desc">Prevent sleeping while a sender is connected</string>
     <string name="setting_wake_on_connect">Wake screen on connect</string>
+    <string name="setting_sleep_on_disconnect">Sleep on disconnect</string>
+    <string name="setting_sleep_on_disconnect_desc">Put this device back to sleep when a session ends that woke it, on Android TV this also turns off the TV over HDMI-CEC</string>
+    <string name="setting_sleep_on_disconnect_no_permission">Tap to enable the accessibility service</string>
     <string name="setting_wake_on_connect_no_permission">Tap to grant Turn screen on access</string>
     <string name="setting_wake_on_connect_desc">Turn the screen on when a sender connects, on Android TV this also turns on the TV over HDMI-CEC</string>
     <string name="setting_advertise_video">Advertise AirPlay video support</string>

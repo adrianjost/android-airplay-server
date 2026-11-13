@@ -110,6 +110,8 @@ object Prefs {
     val AUTO_FULLSCREEN = bool("auto_fullscreen", true)
     val KEEP_SCREEN_ON = bool("keep_screen_on", true)
     val WAKE_ON_CONNECT = bool("wake_on_connect", true)
+    // put the device back to sleep after a session that woke it
+    val SLEEP_ON_DISCONNECT = bool("sleep_on_disconnect", false)
     // the turn screen on access was explained once on first launch
     val WAKE_ACCESS_PROMPTED = bool("wake_access_prompted", false)
     val ADVERTISE_VIDEO = bool("advertise_video", true, restart = true)

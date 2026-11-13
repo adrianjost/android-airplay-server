@@ -560,6 +560,9 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         _durationMs.value = 0
         _serverState.value = ServerState.STOPPED
         _connectionCount.value = 0
+        _mainHandler.removeCallbacks(_sleep)
+        _sleepPending = false
+        _wokenBySender = false
         _clientVol = null
         _clientVolDriveEnd()
         _applyClientVol()
@@ -799,6 +802,10 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         log("Sender connected (${_connectionCount.value})")
         if (!firstConnection) return
         val asleep = !(getSystemService(Context.POWER_SERVICE) as PowerManager).isInteractive
+        // a sender that reconnects before the pending sleep still counts as the one that woke the device
+        _wokenBySender = asleep || _sleepPending
+        _sleepPending = false
+        _mainHandler.removeCallbacks(_sleep)
         if (prefs[Prefs.WAKE_ON_CONNECT]) _wakeScreen()
         if (shouldLaunchOnConnect()) {
             launchMainActivity()
@@ -811,6 +818,10 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         _connectionCount.value = (_connectionCount.value - 1).coerceAtLeast(0)
         if (_connectionCount.value == 0) {
             _mainHandler.removeCallbacks(_relaunch)
+            if (_wokenBySender && prefs[Prefs.SLEEP_ON_DISCONNECT]) {
+                _sleepPending = true
+                _mainHandler.postDelayed(_sleep, SLEEP_DELAY_MS)
+            }
             // clients may drop without POST /stop; must run before the poll-state reset
             _endVideoPlayback("AirPlay Video stopped (disconnect)")
             // last client gone: release audio output devices to save power
@@ -1165,6 +1176,16 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         }
     }
 
+    @Volatile private var _wokenBySender = false
+    @Volatile private var _sleepPending = false
+
+    // restore the state from before the session: asleep, which also turns off a tv over hdmi-cec
+    private val _sleep = Runnable {
+        _sleepPending = false
+        _wokenBySender = false
+        if (_connectionCount.value == 0 && !SleepService.sleep()) log("Sleep on disconnect needs the accessibility service")
+    }
+
     private val _relaunch = Runnable {
         if (_connectionCount.value > 0 && !MainActivity.started && shouldLaunchOnConnect()) launchMainActivity()
     }
@@ -1212,6 +1233,8 @@ class AirPlayService : LifecycleService(), RaopCallbackHandler, LogListener {
         private const val NOTIFICATION_ID = 1
         // long enough for the activity to take over with keep screen on
         private const val WAKE_SCREEN_TIMEOUT_MS = 10_000L
+        // leaves senders time to reconnect
+        private const val SLEEP_DELAY_MS = 3_000L
         private val LAUNCH_RETRY_DELAYS_MS = longArrayOf(1_500L, 3_000L, 6_000L)
         const val ACTION_PLAY_PAUSE = "io.github.jqssun.airplay.PLAY_PAUSE"
         const val ACTION_NEXT = "io.github.jqssun.airplay.NEXT"

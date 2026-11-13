@@ -30,7 +30,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.jqssun.airplay.Prefs
 import io.github.jqssun.airplay.R
 import io.github.jqssun.airplay.appSettingsIntent
+import io.github.jqssun.airplay.canSleepDevice
 import io.github.jqssun.airplay.canTurnScreenOn
+import io.github.jqssun.airplay.openAccessibilitySettings
+import io.github.jqssun.airplay.sleepSupported
 import io.github.jqssun.airplay.openTurnScreenOnSettings
 import io.github.jqssun.airplay.viewmodel.MainViewModel
 import androidx.compose.ui.res.stringArrayResource
@@ -49,6 +52,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
     val autoFullscreen by viewModel.pref(Prefs.AUTO_FULLSCREEN).collectAsState()
     val keepScreenOn by viewModel.pref(Prefs.KEEP_SCREEN_ON).collectAsState()
     val wakeOnConnect by viewModel.pref(Prefs.WAKE_ON_CONNECT).collectAsState()
+    val sleepOnDisconnect by viewModel.pref(Prefs.SLEEP_ON_DISCONNECT).collectAsState()
     val advertiseVideo by viewModel.pref(Prefs.ADVERTISE_VIDEO).collectAsState()
     val advertiseMirroring by viewModel.pref(Prefs.ADVERTISE_MIRRORING).collectAsState()
     val advertiseAudio by viewModel.pref(Prefs.ADVERTISE_AUDIO).collectAsState()
@@ -204,6 +208,42 @@ fun SettingsScreen(viewModel: MainViewModel) {
                 if (it && !wakeCtx.canTurnScreenOn()) wakeCtx.openTurnScreenOnSettings()
             }
         )
+
+        if (sleepSupported) {
+            val canSleepDevice = rememberCanSleepDevice()
+            var showSleepAccess by remember { mutableStateOf(false) }
+            SettingSwitch(
+                title = stringResource(R.string.setting_sleep_on_disconnect),
+                description = stringResource(
+                    if (sleepOnDisconnect && !canSleepDevice) R.string.setting_sleep_on_disconnect_no_permission
+                    else R.string.setting_sleep_on_disconnect_desc
+                ),
+                checked = sleepOnDisconnect && canSleepDevice,
+                onCheckedChange = {
+                    viewModel.set(Prefs.SLEEP_ON_DISCONNECT, it)
+                    if (it && !wakeCtx.canSleepDevice()) showSleepAccess = true
+                }
+            )
+            // the accessibility screen needs more explaining than a plain permission
+            if (showSleepAccess) {
+                AlertDialog(
+                    onDismissRequest = { showSleepAccess = false },
+                    title = { Text(stringResource(R.string.sleep_access_label)) },
+                    text = { Text(stringResource(R.string.sleep_access_dialog)) },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showSleepAccess = false
+                            wakeCtx.openAccessibilitySettings()
+                        }) { Text(stringResource(R.string.btn_open_settings)) }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showSleepAccess = false }) {
+                            Text(stringResource(R.string.btn_not_now))
+                        }
+                    }
+                )
+            }
+        }
 
         SettingResolution(
             value = resolution,
