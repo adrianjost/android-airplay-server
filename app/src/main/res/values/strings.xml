@@ -104,6 +104,8 @@
     <string name="setting_idle_preview_desc">Show video surface while waiting for a connection</string>
     <string name="setting_auto_fullscreen">Enter fullscreen automatically</string>
     <string name="setting_auto_fullscreen_desc">Enter fullscreen when a sender connects</string>
+    <string name="setting_picture_in_picture">Picture-in-Picture</string>
+    <string name="setting_picture_in_picture_desc">Shrink into a floating window when leaving the app during a session, Auto turns it off on TV devices</string>
     <string name="setting_keep_screen_on">Keep screen on</string>
     <string name="setting_keep_screen_on_desc">Prevent sleeping while a sender is connected</string>
     <string name="setting_advertise_video">Advertise AirPlay video support</string>
