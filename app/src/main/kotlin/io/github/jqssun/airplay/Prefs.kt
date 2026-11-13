@@ -109,6 +109,9 @@ object Prefs {
     val IDLE_PREVIEW = bool("idle_preview", false)
     val AUTO_FULLSCREEN = bool("auto_fullscreen", true)
     val KEEP_SCREEN_ON = bool("keep_screen_on", true)
+    val WAKE_ON_CONNECT = bool("wake_on_connect", true)
+    // the turn screen on access was explained once on first launch
+    val WAKE_ACCESS_PROMPTED = bool("wake_access_prompted", false)
     val ADVERTISE_VIDEO = bool("advertise_video", true, restart = true)
     val ADVERTISE_MIRRORING = bool("advertise_mirroring", true, restart = true)
     val ADVERTISE_AUDIO = bool("advertise_audio", true, restart = true)

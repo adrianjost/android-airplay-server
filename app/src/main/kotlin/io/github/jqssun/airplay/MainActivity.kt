@@ -163,6 +163,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStart() {
         super.onStart()
+        started = true
         _syncLocalNetwork()
         _refreshForeground()
     }
@@ -199,6 +200,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
+        started = false
         // never stop mid-session
         if (!viewModel.pref(Prefs.RUN_IN_BACKGROUND).value && !isChangingConfigurations &&
             viewModel.serverState.value == AirPlayService.ServerState.RUNNING &&
@@ -214,5 +216,12 @@ class MainActivity : ComponentActivity() {
         }
         unbindService(connection)
         super.onDestroy()
+    }
+
+    companion object {
+        // lets the service tell whether its launch actually put the activity on screen
+        @Volatile
+        var started = false
+            private set
     }
 }
